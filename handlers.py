@@ -11,15 +11,14 @@ session = DBSession()
 
 def get_or_create_user(username, access_token):
     session = DBSession()
-    user = session.query(User).filter_by(username=username).first()
+    user = session.query(User).filter_by(username=username)
     if not user:
         user = User(username = username)
-        user.hash_token(access_token)
         session.add(user)
         session.commit()
-    user.update({User.token_hash: user.hash_token(access_token)})
+    user.update({User.token_hash: user.first().hash_token(access_token)})
     session.commit()
-    return user
+    return user.first()
 
 def add_category(form):
     session = DBSession()

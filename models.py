@@ -57,10 +57,10 @@ class Definition(Base):
     word = Column(String(80), nullable=False)
     definition = Column(String(250), nullable=False)
     created_by = Column(String(32), ForeignKey('user.username'), nullable=False)
-    category = Column(Integer, ForeignKey('category.name'), nullable=False)
+    category_name = Column(Integer, ForeignKey('category.name'), nullable=False)
 
-    user = relationship(User, foreign_keys=[created_by])
-    category = relationship(Category, foreign_keys=[category])
+    user = relationship(User)
+    category = relationship(Category)
     @property
     def serialize(self):
         return {
