@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Acronym Dictionary</title>
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+      {% for message in messages %}
+      <li><h2>{{ message }}</h2></li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  <h1 class="title-main">Show all the categories here</h1>
+  <a href="/categories/add">add a new category</a>
+
+  {% for category in categories %}
+  <ul>
+    <li>
+      <p>{{ category.name }}</p>
+    </li>
+  </ul>
+  {% endfor %}
+  
+</body>
+</html>
