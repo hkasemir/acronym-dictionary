@@ -11,8 +11,17 @@ session = DBSession()
 
 
 # user1
-user1 = User(username='hkasemir')
+# user1 = session.query(User).filter(User.username=='hkasemir').one()
+# 
+# session.delete(user1)
+# session.commit()
 
-session.add(user1)
-session.commit()
+all_users = session.query(User).all()
+all_categories = session.query(Category).all()
+
+for u in all_users:
+    print u.username
+
+for c in all_categories:
+    print c.name
 

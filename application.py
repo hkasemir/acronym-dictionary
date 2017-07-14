@@ -1,9 +1,9 @@
 import handlers
 from flask import Flask, jsonify, request, url_for, abort, g, render_template
+from models import Base, User, Definition, Category
 from flask import make_response, redirect
 from flask import session as login_session
 
-from flask_httpauth import HTTPBasicAuth
 import json
 import httplib2
 import urllib
@@ -11,42 +11,94 @@ import requests
 import random
 import string
 
-auth = HTTPBasicAuth()
-
 CLIENT_ID = json.loads(open('secrets.json', 'r').read())['client_id']
 CLIENT_SECRET = json.loads(open('secrets.json', 'r').read())['client_secret']
 AUTH_URI = json.loads(open('secrets.json', 'r').read())['auth_uri']
 TOKEN_URI = json.loads(open('secrets.json', 'r').read())['token_request_uri']
 REDIRECT_URI = json.loads(open('secrets.json', 'r').read())['redirect_uri']
 
-@auth.verify_password
-def verify_token(token):
-    user_id = User.verify_auth_token(token)
-    if user_id:
-        user = session.query(User).filter_by(id = user_id).one()
+app = Flask(__name__)
+
+def getUsername():
+    if 'username' in login_session:
+        return login_session['username']
+    return None
+
+def verify_session():
+    if getUsername():
+        return True
     else:
         return False
-    g.user = user
-    return True
-
-app = Flask(__name__)
 
 
 @app.route('/')
 def main():
-    return render_template('index.html')
+    return handlers.show_main(getUsername())
 
-@app.route('/categories/add', methods=['POST', 'GET'])
+@app.route('/categories', methods=['POST', 'GET'])
 def add_category():
     if request.method == 'POST':
         handlers.add_category(request.form)
         return redirect(url_for('main'))
 
     if request.method == 'GET':
-        return render_template('category_create.html')
+        return render_template('category_create.html', username=getUsername())
+
+@app.route('/categories/<categoryname>')
+def show_category(categoryname):
+    return handlers.show_category(categoryname, getUsername())
+
+@app.route('/categories/<categoryname>/delete', methods=['POST', 'GET'])
+def delete_category(categoryname):
+    if request.method == 'POST':
+        handlers.delete_category(categoryname, getUsername())
+        return redirect(url_for('main'))
+
+    if request.method == 'GET':
+        return handlers.show_delete_category(categoryname, getUsername())
+
+@app.route('/definitions', methods=['POST', 'GET'])
+def add_definition():
+    if not verify_session():
+        login_session['return_url'] = url_for('add_definition')
+        return redirect('/login')
+    if request.method == 'POST':
+        word = handlers.add_word(request.form, getUsername())
+        return redirect(url_for('show_definition', word=word.word))
+
+    if request.method == 'GET':
+        return handlers.show_add_word(getUsername())
+
+@app.route('/definitions/<word>')
+def show_definition(word):
+    return handlers.show_word(word, getUsername())
+
+@app.route('/definitions/<word>/edit', methods=['POST', 'GET'])
+def edit_definition(word):
+    if not verify_session():
+        login_session['return_url'] = url_for('edit_definition', word=word)
+        return redirect('/login')
+    if request.method == 'POST':
+        word = handlers.add_word(request.form, getUsername())
+        return redirect(url_for('show_word', word=word))
+
+    if request.method == 'GET':
+        return render_template('definition_create.html', username = getUsername())
+
+@app.route('/definitions/<word>/delete', methods=['POST', 'GET'])
+def delete_definition(word):
+    if not verify_session():
+        login_session['return_url'] = url_for('delete_definition', word=word)
+        return redirect('/login')
+    if request.method == 'POST':
+        word = handlers.add_word(request.form, getUsername())
+        return redirect(url_for('show_word', word=word))
+
+    if request.method == 'GET':
+        return render_template('definition_create.html', username = getUsername())
 
 @app.route('/login')
-def auth():
+def login():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     login_session['state'] = state
@@ -58,19 +110,24 @@ def auth():
 
     return redirect(AUTH_URI + '?' + urllib.urlencode(params))
 
+@app.route('/logout')
+def logout():
+    login_session.pop('username', None)
+    login_session.pop('return_url', None)
+    login_session.pop('state', None)
+    return redirect(url_for('main'))
+
 @app.route('/auth')
-def login():
+def auth():
     #STEP 1 - Check state matches to ensure a third party
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    # Obtain authorization code
-    code = request.args.get('code')
-    print "Step 1 - Complete, received auth code %s" % code
 
     #STEP 2 - Exchange for a token
     # Upgrade the authorization code into a credentials object
+    code = request.args.get('code')
     step2_params = {
             'client_id': CLIENT_ID,
             'client_secret': CLIENT_SECRET,
@@ -80,62 +137,26 @@ def login():
             }
     headers = {'Accept': 'application/json'}
     credentials = requests.post(TOKEN_URI, headers=headers, json=step2_params)
-    print(credentials.json()['access_token'])
-          
-    # Check that the access token is valid.
     access_token = credentials.json()['access_token']
 
-    # # Verify that the access token is used for the intended user.
-    # gplus_id = credentials.id_token['sub']
-    # if result['user_id'] != gplus_id:
-    #     response = make_response(json.dumps("Token's user ID doesn't match given user ID."), 401)
-    #     response.headers['Content-Type'] = 'application/json'
-    #     return response
-
-    # # Verify that the access token is valid for this app.
-    # if result['issued_to'] != CLIENT_ID:
-    #     response = make_response(json.dumps("Token's client ID does not match app's."), 401)
-    #     response.headers['Content-Type'] = 'application/json'
-    #     return response
-
-    # stored_credentials = login_session.get('credentials')
-    # stored_gplus_id = login_session.get('gplus_id')
-    # if stored_credentials is not None and gplus_id == stored_gplus_id:
-    #     response = make_response(json.dumps('Current user is already connected.'), 200)
-    #     response.headers['Content-Type'] = 'application/json'
-    #     return response
-    print "Step 2 Complete! Access Token : %s " % access_token
-    url = 'https://api.github.com/user?access_token=%s' % access_token
-
     #STEP 3 - Find User or make a new one
-    
     #Get user info
-    answer = requests.get(url)
-  
-    data = answer.json()
-    print data
-
+    url = 'https://api.github.com/user?access_token=%s' % access_token
+    user = requests.get(url)
+    data = user.json()
     username = data['login']
     #see if user exists, if it doesn't make a new one
     user = handlers.get_or_create_user(username, access_token)
-    #STEP 4 - Make token
-    cookie = user.generate_auth_cookie()
-    login_session['cookie'] = cookie
 
-    #STEP 5 - Send back token to the client 
-    return jsonify({'token': cookie.decode('ascii')})
-
-@app.route('/token')
-# @auth.login_required
-def get_auth_token():
-    token = g.user.generate_auth_token()
-    return jsonify({'token': token.decode('ascii')})
-# 
-# @app.route('/api/resource')
-# @auth.login_required
-# def get_resource():
-#     return jsonify({ 'data': 'Hello, %s!' % g.user.username })
-
+    #STEP 4 - set login_session creds and redirect
+    login_session['username'] = username
+    redirect_url = '/'
+    if 'return_url' in login_session:
+        # they were redirected to login while trying to access a specific page
+        # so send them back there
+        redirect_url = login_session['return_url']
+    response = make_response(redirect(redirect_url))
+    return response
 
 
 if __name__ == '__main__':

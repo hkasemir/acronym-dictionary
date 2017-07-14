@@ -7,6 +7,7 @@ from itsdangerous import(TimedJSONWebSignatureSerializer as Serializer, BadSigna
 
 Base = declarative_base()
 secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+secret_key = 'abssdfasdf'
 
 class User(Base):
     __tablename__ = 'user'
@@ -19,24 +20,6 @@ class User(Base):
 
     def verify_token(self, token):
         return pwd_context.verify(token, self.token_hash)
-
-    def generate_auth_cookie(self, expiration=600):
-    	s = Serializer(secret_key, expires_in = expiration)
-    	return s.dumps({'uid': self.uid })
-
-    @staticmethod
-    def verify_auth_cookie(cookie):
-    	s = Serializer(secret_key)
-    	try:
-    		data = s.loads(cookie)
-    	except SignatureExpired:
-    		#Valid Token, but expired
-    		return None
-    	except BadSignature:
-    		#Invalid Token
-    		return None
-    	user_id = data['uid']
-    	return user_id
 
 
 class Category(Base):
@@ -57,7 +40,7 @@ class Definition(Base):
     word = Column(String(80), nullable=False)
     definition = Column(String(250), nullable=False)
     created_by = Column(String(32), ForeignKey('user.username'), nullable=False)
-    category_name = Column(Integer, ForeignKey('category.name'), nullable=False)
+    category_name = Column(String(80), ForeignKey('category.name'), nullable=False)
 
     user = relationship(User)
     category = relationship(Category)

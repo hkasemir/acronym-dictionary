@@ -6,6 +6,11 @@
   <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  {% if username %}
+    <a href="/logout">logout {{ username }}</a>
+  {% else %}
+    <a href="/login">login</a>
+  {% endif %}
   {% with messages = get_flashed_messages() %}
     {% if messages %}
       <ul>
@@ -16,12 +21,13 @@
     {% endif %}
   {% endwith %}
   <h1 class="title-main">Show all the categories here</h1>
-  <a href="/categories/add">add a new category</a>
+  <a href="/categories">add a new category</a>
+  <a href="/definitions">add a new word</a>
 
   {% for category in categories %}
   <ul>
     <li>
-      <p>{{ category.name }}</p>
+      <p><a href="{{ url_for('show_category', categoryname=category.name) }}">{{ category.name }}</a></p>
     </li>
   </ul>
   {% endfor %}

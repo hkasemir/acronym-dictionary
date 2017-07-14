@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Acronym Dictionary</title>
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  {% if username %}
+    <a href="/logout">logout {{ username }}</a>
+  {% else %}
+    <a href="/login">login</a>
+  {% endif %}
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+      {% for message in messages %}
+      <li><h2>{{ message }}</h2></li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  <h1 class="title-main">{{ category }}</h1>
+  <a href="{{url_for('delete_category', categoryname=category)}}">delete category</a>
+  <a href="/definitions">add a new word</a>
+
+  {% for word in words %}
+  <ul>
+    <li>
+      <p><a href="{{ url_for('show_definition', word=word.word) }}">{{ word.word }}</a></p>
+      <p>{{ word.definition }}</p>
+    </li>
+  </ul>
+  {% endfor %}
+  
+</body>
+</html>
+
