@@ -15,12 +15,16 @@ class Category(Base):
     __tablename__ = 'category'
     id = Column(Integer, primary_key=True)
     name = Column(String(80), nullable=False, unique=True)
+    definitions = relationship('Definition')
 
     @property
     def serialize(self):
+        cat_definitions = [definition.serialize_nested for
+                           definition in self.definitions]
         return {
             'id': self.id,
             'name': self.name,
+            'definitions': cat_definitions
         }
 
 
@@ -38,6 +42,15 @@ class Definition(Base):
 
     user = relationship(User)
     category = relationship(Category)
+
+    @property
+    def serialize_nested(self):
+        return {
+            'id':   self.id,
+            'word': self.word,
+            'definition': self.definition,
+            'created_by': self.created_by,
+        }
 
     @property
     def serialize(self):
