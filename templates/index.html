@@ -1,36 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Acronym Dictionary</title>
-  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  {% if username %}
-    <a href="/logout">logout {{ username }}</a>
-  {% else %}
-    <a href="/login">login</a>
-  {% endif %}
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <ul>
-      {% for message in messages %}
-      <li><h2>{{ message }}</h2></li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
-  <h1 class="title-main">Show all the categories here</h1>
-  <a href="/categories">add a new category</a>
-  <a href="/definitions">add a new word</a>
-
-  {% for category in categories %}
+{% extends "base.html" %}
+{% block title %}Home | {% endblock %}
+{% block content %}
   <ul>
+  {% for word in latest_words %}
     <li>
-      <p><a href="{{ url_for('show_category', categoryname=category.name) }}">{{ category.name }}</a></p>
+      <a href="{{ url_for('show_definition', word=word.word) }}">{{ word.word }}</a>
+      ({{ word.category_name }}) - {{ word.definition }}
     </li>
-  </ul>
   {% endfor %}
-  
-</body>
-</html>
+  </ul>
+{% endblock %}

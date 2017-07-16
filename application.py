@@ -37,7 +37,7 @@ def verify_session():
 
 @app.route('/')
 def main():
-    return handlers.show_main(getUsername())
+    return handlers.show_main()
 
 
 @app.route('/definitions/json')
@@ -62,30 +62,30 @@ def add_category():
         return redirect(url_for('main'))
 
     if request.method == 'GET':
-        return render_template('category_create.html', username=getUsername())
+        return handlers.show_add_category()
 
 
 @app.route('/categories/<categoryname>')
 def show_category(categoryname):
-    return handlers.show_category(categoryname, getUsername())
+    return handlers.show_category(categoryname)
 
 
 @app.route('/categories/<categoryname>/delete', methods=['POST', 'GET'])
 def delete_category(categoryname):
     if request.method == 'POST':
         if handlers.category_has_words(categoryname):
-            flash('Can\'t delete a category with words in it')
+            flash('Can\'t delete a category with words in it', 'error')
             return redirect(
                     url_for('show_category', categoryname=categoryname))
-        handlers.delete_category(categoryname, getUsername())
+        handlers.delete_category(categoryname)
         return redirect(url_for('main'))
 
     if request.method == 'GET':
         if handlers.category_has_words(categoryname):
-            flash('Can\'t delete a category with words in it')
+            flash('Can\'t delete a category with words in it', 'error')
             return redirect(
                     url_for('show_category', categoryname=categoryname))
-        return handlers.show_delete_category(categoryname, getUsername())
+        return handlers.show_delete_category(categoryname)
 
 
 @app.route('/definitions', methods=['POST', 'GET'])
@@ -94,16 +94,16 @@ def add_definition():
         login_session['return_url'] = url_for('add_definition')
         return redirect('/login')
     if request.method == 'POST':
-        definition = handlers.add_word(request.form, getUsername())
+        definition = handlers.add_word(request.form)
         return redirect(url_for('show_definition', word=definition.word))
 
     if request.method == 'GET':
-        return handlers.show_add_word(getUsername())
+        return handlers.show_add_word()
 
 
 @app.route('/definitions/<word>')
 def show_definition(word):
-    return handlers.show_word(word, getUsername())
+    return handlers.show_word(word)
 
 
 @app.route('/definitions/<word>/edit', methods=['POST', 'GET'])
@@ -112,16 +112,16 @@ def edit_definition(word):
         login_session['return_url'] = url_for('edit_definition', word=word)
         return redirect('/login')
     if request.method == 'POST':
-        if handlers.user_created_word(word, getUsername()):
-            updated = handlers.edit_word(word, request.form, getUsername())
+        if handlers.user_created_word(word):
+            updated = handlers.edit_word(word, request.form)
             return redirect(url_for('show_definition', word=updated.word))
-        flash('Can\'t edit a word you did not create')
+        flash('Can\'t edit a word you did not create', 'error')
         return redirect(url_for('show_definition', word=word))
 
     if request.method == 'GET':
-        if handlers.user_created_word(word, getUsername()):
-            return handlers.show_edit_word(word, getUsername())
-        flash('Can\'t edit a word you did not create')
+        if handlers.user_created_word(word):
+            return handlers.show_edit_word(word)
+        flash('Can\'t edit a word you did not create', 'error')
         return redirect(url_for('show_definition', word=word))
 
 
@@ -131,17 +131,17 @@ def delete_definition(word):
         login_session['return_url'] = url_for('delete_definition', word=word)
         return redirect('/login')
     if request.method == 'POST':
-        if handlers.user_created_word(word, getUsername()):
-            categoryname = handlers.delete_word(word, getUsername())
+        if handlers.user_created_word(word):
+            categoryname = handlers.delete_word(word)
             return redirect(
                     url_for('show_category', categoryname=categoryname))
-        flash('Can\'t delete a word you did not create')
+        flash('Can\'t delete a word you did not create', 'error')
         return redirect(url_for('show_definition', word=word))
 
     if request.method == 'GET':
-        if handlers.user_created_word(word, getUsername()):
-            return handlers.show_delete_word(word, getUsername())
-        flash('Can\'t delete a word you did not create')
+        if handlers.user_created_word(word):
+            return handlers.show_delete_word(word)
+        flash('Can\'t delete a word you did not create', 'error')
         return redirect(url_for('show_definition', word=word))
 
 
@@ -163,6 +163,7 @@ def login():
 def logout():
     login_session.pop('username', None)
     login_session.pop('return_url', None)
+    login_session.pop('avatar_url', None)
     login_session.pop('state', None)
     return redirect(url_for('main'))
 
@@ -200,6 +201,7 @@ def auth():
 
     # STEP 4 - set login_session creds and redirect
     login_session['username'] = user.username
+    login_session['avatar_url'] = data['avatar_url']
     redirect_url = '/'
     if 'return_url' in login_session:
         # they were redirected to login while trying to access a specific page

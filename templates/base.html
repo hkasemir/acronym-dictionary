@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}{% endblock %}Acronym Dictionary</title>
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <nav class="nav-main">
+    <a href="/" class="nav-home">home</a>
+    <a href="/categories">add a new category</a>
+    <a href="/definitions">add a new word</a>
+  {% if username %}
+  <div class="nav-account">
+    <a href="/logout">logout {{ username }}</a>
+    <img src="{{ avatar_url }}" alt="user avatar" class="user-avatar">
+  </div>
+  {% else %}
+  <div class="nav-account">
+    <a href="/login" class="nav-account">login</a>
+  </div>
+  {% endif %}
+  </nav>
+
+  <section class="main-container">
+    <aside class="category-list-container">
+      <ul>
+        {% for category in categories %}
+          <li>
+            <a href="{{ url_for('show_category', categoryname=category.name) }}" class="category-list-item">{{ category.name }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </aside>
+    <main class="content">{% block content %}{% endblock %}</main>
+  </section>
+  
+  <div class="alert-container">
+    {% with messages = get_flashed_messages(category_filter=["error"]) %}
+      {% if messages %}
+      <ul class="alert-error">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    {% endwith %}
+    {% with messages = get_flashed_messages(category_filter=["success"]) %}
+      {% if messages %}
+      <ul class="alert-success">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    {% endwith %}
+  </div>
+</body>
+</html>
+

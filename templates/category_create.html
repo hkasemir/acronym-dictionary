@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Acronym Dictionary</title>
-  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}{{ category }} | {% endblock %}
+{% block content %}
   <h1 class="title-main">add a new category</h1>
 
   <form method='POST' enctype='multipart/form-data' action={{ url_for('add_category') }}>
@@ -13,7 +8,4 @@
     <input type="submit" value="Submit">
     <a href={{ url_for('main') }}>cancel</a>
   </form>
-
-</body>
-</html>
-
+{% endblock %}
