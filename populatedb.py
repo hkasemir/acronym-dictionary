@@ -65,4 +65,5 @@ for c in all_categories:
 for w in all_words:
     print w.word
 
+# for when you just want to start over:
 # Base.metadata.drop_all(engine)
