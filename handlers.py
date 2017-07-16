@@ -74,6 +74,10 @@ def get_categories():
 
 
 def add_category(form):
+    # a category can be created by anyone
+    # this is a deliberate choice - the owner of a category ultimately does not
+    # matter because the app is maintained by the community, and anyone can add
+    # a definition to any category
     session = DBSession()
     session.add(Category(name=form['name']))
     session.commit()
@@ -125,6 +129,12 @@ def show_delete_category(categoryname):
 
 
 def delete_category(categoryname):
+    # a category can be deleted by anyone, so long as no words are in it
+    # this is a deliberate choice - the app should be maintained organically
+    # by the community, and if there are no definitions in a category, I want
+    # anyone to be able to delete this is also why there is no edit capability
+    # for a category - if other people add definitions to the category, I don't
+    # want anyone to chang it.
     if not category_has_words(categoryname):
         session = DBSession()
         category = session.query(Category).filter(

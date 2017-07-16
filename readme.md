@@ -21,12 +21,13 @@ the session open
 
 the definition table has
 ```
-id | word | definition | created_by | categoryname
+id | word | definition | created_by | category_name
 ```
 any user can create a new entry, but items will only be editable by those who
 created them
 
 there will be categories for different types of acronyms (i.e. 'slang', 'job', 'component')
+
 the category table has:
 ```
 id | name
@@ -47,7 +48,10 @@ python populatedb.py
 ```
 
 you'll need to add an OAuth application on github (sorry, I'm not sharing my secrets)
-and include a new `secrets.json` file with the following format: 
+set the app's `Homepage URL` to `http://localhost:5000`
+and its `Authorization callback URL` to `http://localhost:5000/auth`
+
+finally, include a new `secrets.json` file with the following format: 
 ```
 {
   "auth_uri": "http://github.com/login/oauth/authorize",
@@ -55,7 +59,25 @@ and include a new `secrets.json` file with the following format:
   "redirect_uri": "http://localhost:5000/auth",
   "client_id": "your github app id",
   "client_secret": "your github app secret",
-  "app_secret_key": "some random secret"
+  "app_secret_key": "some random secret, could be anything, you don't even have to change this"
 }
 ```
 in the root directory
+
+
+once you're ready to run - do so with
+```
+python application.py
+```
+
+and go to `localhost:5000` in your browser
+
+## json endpoints
+There are a couple json endpoints available to get info for your convenience
+```
+/categories/json
+
+/definitions/<word>/json
+
+/definitions/json
+```
