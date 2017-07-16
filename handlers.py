@@ -1,12 +1,13 @@
 from flask import render_template, flash, jsonify
 from models import Base, User, Definition, Category
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
 engine = create_engine('sqlite:///dictionary.db')
 
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
+
 
 # user ####################
 
@@ -25,6 +26,7 @@ def get_or_create_user(username, access_token):
             {User.token_hash: user_query.first().hash_token(access_token)})
     session.commit()
     return user_query.first()
+
 
 # main ####################
 
@@ -75,6 +77,8 @@ def add_category(form):
 
 
 def category_has_words(categoryname):
+    # since categories can only be deleted if they have no words,
+    # this utility function returns a boolean for a quick check
     session = DBSession()
     a_word = session.query(Definition).filter(
             Definition.category_name == categoryname).first()
@@ -108,6 +112,7 @@ def delete_category(categoryname, username):
         session.commit()
         flash('category %s deleted!' % categoryname)
 
+
 # word functions ####################
 
 
@@ -116,6 +121,7 @@ def get_latest_words():
 
 
 def user_created_word(word, username):
+    # boolean whether the user is the owner of the word
     session = DBSession()
     definition = session.query(Definition).filter(
             Definition.word == word).one()

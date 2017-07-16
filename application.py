@@ -1,11 +1,9 @@
 import handlers
-from flask import Flask, jsonify, flash, url_for, abort, g, render_template
-from models import Base, User, Definition, Category
+from flask import Flask, flash, url_for, render_template
 from flask import make_response, redirect, request
 from flask import session as login_session
 
 import json
-import httplib2
 import urllib
 import requests
 import random
@@ -28,6 +26,9 @@ def getUsername():
 
 
 def verify_session():
+    # by making use of flask's login_session, we just check to see if the user
+    # has been encoded in the login_session. If so, they have authenticated
+    # and provided their github username to our users table
     if getUsername():
         return True
     else:
@@ -175,7 +176,7 @@ def auth():
         return response
 
     # STEP 2 - Exchange for a token
-    # Upgrade the authorization code into a credentials object
+    # Upgrade the authorization code into an authentication token
     code = request.args.get('code')
     step2_params = {
             'client_id': CLIENT_ID,
@@ -198,7 +199,7 @@ def auth():
     user = handlers.get_or_create_user(username, access_token)
 
     # STEP 4 - set login_session creds and redirect
-    login_session['username'] = username
+    login_session['username'] = user.username
     redirect_url = '/'
     if 'return_url' in login_session:
         # they were redirected to login while trying to access a specific page

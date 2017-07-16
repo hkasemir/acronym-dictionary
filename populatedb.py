@@ -20,11 +20,36 @@ category1 = Category(name='slang')
 session.add(category1)
 session.commit()
 
-word1= Definition(word='LOL', definition='Laugh out loud',
-        created_by=user1.username,
-        category_name=category1.name
-        )
+word1 = Definition(word='LOL', definition='Laugh out loud',
+                   created_by=user1.username,
+                   category_name=category1.name
+                   )
 session.add(word1)
+session.commit()
+
+category2 = Category(name='udacious things')
+session.add(category2)
+session.commit()
+
+word2 = Definition(word='NDOP', definition='Nanodegree overview page',
+                   created_by=user1.username,
+                   category_name=category2.name
+                   )
+session.add(word2)
+session.commit()
+
+word3 = Definition(word='COP', definition='Course overview page',
+                   created_by=user1.username,
+                   category_name=category2.name
+                   )
+session.add(word3)
+session.commit()
+
+word4 = Definition(word='SS', definition='Student services',
+                   created_by=user1.username,
+                   category_name=category2.name
+                   )
+session.add(word4)
 session.commit()
 
 all_users = session.query(User).all()
@@ -41,4 +66,3 @@ for w in all_words:
     print w.word
 
 # Base.metadata.drop_all(engine)
-

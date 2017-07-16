@@ -14,14 +14,14 @@ encouraged to learn to code!
 
 The user table has
 ```
-uid | username | hashed_token
+uid | username
 ```
 users will be added when they authenticate and their browsers cookies will keep
 the session open
 
 the definition table has
 ```
-id | word | definition | created_by | category
+id | word | definition | created_by | categoryname
 ```
 any user can create a new entry, but items will only be editable by those who
 created them
@@ -40,17 +40,22 @@ a category that has no words associated with it.
 set up vagrant and virtual box following instructions from Udacity's full stack
 [vm](https://github.com/udacity/fullstack-nanodegree-vm)
 
-once you're in, set up the database by running 
+once you're in, set up the database and add some seed data by running 
 ```
 python models.py
+python populatedb.py
 ```
 
 you'll need to add an OAuth application on github (sorry, I'm not sharing my secrets)
 and include a new `secrets.json` file with the following format: 
 ```
 {
-  "client_id": "your id",
-  "client_secret": "your secret"
+  "auth_uri": "http://github.com/login/oauth/authorize",
+  "token_uri": "https://github.com/login/oauth/access_token",
+  "redirect_uri": "http://localhost:5000/auth",
+  "client_id": "your github app id",
+  "client_secret": "your github app secret",
+  "app_secret_key": "some random secret"
 }
 ```
 in the root directory
