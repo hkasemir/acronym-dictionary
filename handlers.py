@@ -37,6 +37,22 @@ def show_main(username):
             latest_words=latest_words
             )
 
+def get_words_json():
+    session = DBSession()
+    words = session.query(Definition).all()
+    return jsonify(Definition=[w.serialize for w in words])
+
+def get_single_word_json(word):
+    session = DBSession()
+    definition = session.query(Definition).filter(
+            Definition.word == word).one()
+    return jsonify(Definition=[definition.serialize])
+
+def get_categories_json():
+    session = DBSession()
+    categories = session.query(Category).all()
+    return jsonify(Category=[c.serialize for c in categories])
+
 #### category functions ####
 
 def get_categories():
@@ -108,9 +124,52 @@ def add_word(form, username):
 
 def show_word(word, username):
     session = DBSession()
-    word = session.query(Definition).filter(
+    definition = session.query(Definition).filter(
             Definition.word == word).one()
     return render_template('definition.html',
             username = username,
-            word=word
+            word=definition
             )
+
+def show_edit_word(word, username):
+    session = DBSession()
+    definition = session.query(Definition).filter(
+            Definition.word == word).one()
+    return render_template('definition_edit.html',
+            username = username,
+            word=definition
+            )
+
+def edit_word(old_word, form, username):
+    session = DBSession()
+    word = session.query(Definition).filter(
+            Definition.word == old_word).one()
+    word.word = form['word']
+    word.definition = form['definition']
+    session.add(word)
+    session.commit()
+    flash('word %s edited!' % form['word'])
+    updated = session.query(Definition).filter(
+            Definition.id == word.id).one()
+    return updated
+
+def show_delete_word(word, username):
+    session = DBSession()
+    definition = session.query(Definition).filter(
+            Definition.word == word).one()
+    return render_template('definition_delete.html',
+            username = username,
+            word=definition
+            )
+
+def delete_word(word, username):
+    session = DBSession()
+    deleted = session.query(Definition).filter(
+            Definition.word == word)
+    categoryname = deleted.one().category_name
+    deleted.delete()
+    session.commit()
+    flash('word %s deleted!' % word)
+    return categoryname
+
+

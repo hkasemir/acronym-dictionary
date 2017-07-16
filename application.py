@@ -11,11 +11,11 @@ import requests
 import random
 import string
 
-CLIENT_ID = json.loads(open('secrets.json', 'r').read())['client_id']
+CLIENT_ID     = json.loads(open('secrets.json', 'r').read())['client_id']
 CLIENT_SECRET = json.loads(open('secrets.json', 'r').read())['client_secret']
-AUTH_URI = json.loads(open('secrets.json', 'r').read())['auth_uri']
-TOKEN_URI = json.loads(open('secrets.json', 'r').read())['token_request_uri']
-REDIRECT_URI = json.loads(open('secrets.json', 'r').read())['redirect_uri']
+AUTH_URI      = json.loads(open('secrets.json', 'r').read())['auth_uri']
+TOKEN_URI     = json.loads(open('secrets.json', 'r').read())['token_uri']
+REDIRECT_URI  = json.loads(open('secrets.json', 'r').read())['redirect_uri']
 
 app = Flask(__name__)
 
@@ -34,6 +34,18 @@ def verify_session():
 @app.route('/')
 def main():
     return handlers.show_main(getUsername())
+
+@app.route('/definitions/json')
+def words_json():
+    return handlers.get_words_json()
+
+@app.route('/definitions/<word>/json')
+def single_word_json(word):
+    return handlers.get_single_word_json(word)
+
+@app.route('/categories/json')
+def categories_json():
+    return handlers.get_categories_json()
 
 @app.route('/categories', methods=['POST', 'GET'])
 def add_category():
@@ -63,8 +75,8 @@ def add_definition():
         login_session['return_url'] = url_for('add_definition')
         return redirect('/login')
     if request.method == 'POST':
-        word = handlers.add_word(request.form, getUsername())
-        return redirect(url_for('show_definition', word=word.word))
+        definition = handlers.add_word(request.form, getUsername())
+        return redirect(url_for('show_definition', word=definition.word))
 
     if request.method == 'GET':
         return handlers.show_add_word(getUsername())
@@ -79,11 +91,11 @@ def edit_definition(word):
         login_session['return_url'] = url_for('edit_definition', word=word)
         return redirect('/login')
     if request.method == 'POST':
-        word = handlers.add_word(request.form, getUsername())
-        return redirect(url_for('show_word', word=word))
+        updated = handlers.edit_word(word, request.form, getUsername())
+        return redirect(url_for('show_definition', word=updated.word))
 
     if request.method == 'GET':
-        return render_template('definition_create.html', username = getUsername())
+        return handlers.show_edit_word(word, getUsername())
 
 @app.route('/definitions/<word>/delete', methods=['POST', 'GET'])
 def delete_definition(word):
@@ -91,11 +103,11 @@ def delete_definition(word):
         login_session['return_url'] = url_for('delete_definition', word=word)
         return redirect('/login')
     if request.method == 'POST':
-        word = handlers.add_word(request.form, getUsername())
-        return redirect(url_for('show_word', word=word))
+        categoryname = handlers.delete_word(word, getUsername())
+        return redirect(url_for('show_category', categoryname=categoryname))
 
     if request.method == 'GET':
-        return render_template('definition_create.html', username = getUsername())
+        return handlers.show_delete_word(word, getUsername())
 
 @app.route('/login')
 def login():

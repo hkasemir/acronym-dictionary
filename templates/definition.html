@@ -17,6 +17,12 @@
   {% endwith %}
   <h1 class="title-main">{{ word.word }}</h1>
   <p>{{ word.definition }}</p>
+  <p> - added by: {{ word.created_by }}</p>
+
+    {% if username == word.created_by %}
+      <a href="{{ url_for('edit_definition', word=word.word) }}">edit</a>
+      <a href="{{ url_for('delete_definition', word=word.word) }}">delete</a>
+    {% endif %}
 
 </body>
 </html>

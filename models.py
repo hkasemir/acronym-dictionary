@@ -51,7 +51,7 @@ class Definition(Base):
             'word': self.word,
             'definition': self.definition,
             'created_by': self.created_by,
-            'category': self.category,
+            'category': self.category_name,
         }
 
 
