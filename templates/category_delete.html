@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block title %}{{ category }} | {% endblock %}
 {% block content %}
-  <h1 class="title-main">delete category {{ category }}</h1>
+  <h1 class="word-title">delete "{{ category }}"?</h1>
 
-  <form method='POST' enctype='multipart/form-data' action={{ url_for('delete_category', categoryname=category) }}>
-    <h2>Are you sure you want to delete this category?</h2>
-    <input type="submit" value="Yes">
-    <a href={{ url_for('show_category', categoryname=category) }}>cancel</a>
+  <form method='POST' enctype='multipart/form-data' action={{ url_for('delete_category', categoryname=category) }} class="form">
+    <p>are you sure?</p>
+    <input type="submit" value="delete!" class="submit-button">
+    <a href={{ url_for('show_category', categoryname=category) }} class="inconspicuous-link">cancel</a>
   </form>
 {% endblock %}

@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block title %}{{word.word}} | {% endblock %}
 {% block content %}
-  <h1 class="title-main">are you sure you want to delete {{ word.word }}?</h1>
-  <p>{{ word.definition }}</p>
+  <h1 class="word-title">are you sure you want to delete "{{ word.word }}"?</h1>
 
-  <form method='POST' enctype='multipart/form-data' action={{ url_for('delete_definition', word=word.word) }}>
-    <input type="submit" value="Delete!">
-    <a href={{ url_for('show_definition', word=word.word) }}>cancel</a>
+  <form method='POST' enctype='multipart/form-data' action={{ url_for('delete_definition', word=word.word) }} class="form">
+    <p class="delete-definition">{{ word.definition }}</p>
+    <input type="submit" value="delete!" class="submit-button">
+    <a href={{ url_for('show_definition', word=word.word) }} class="inconspicuous-link">cancel</a>
   </form>
 {% endblock %}

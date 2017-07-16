@@ -19,7 +19,7 @@ APP_SECRET_KEY = json.loads(open('secrets.json', 'r').read())['app_secret_key']
 app = Flask(__name__)
 
 
-def getUsername():
+def get_username():
     if 'username' in login_session:
         return login_session['username']
     return None
@@ -29,7 +29,7 @@ def verify_session():
     # by making use of flask's login_session, we just check to see if the user
     # has been encoded in the login_session. If so, they have authenticated
     # and provided their github username to our users table
-    if getUsername():
+    if get_username():
         return True
     else:
         return False

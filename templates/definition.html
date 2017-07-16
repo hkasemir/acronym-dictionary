@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block title %}{{word.word}} | {% endblock %}
 {% block content %}
-  <h1 class="title-main">{{ word.word }}</h1>
-  <p>{{ word.definition }}</p>
-  <p> - added by: {{ word.created_by }}</p>
+  <h1 class="word-title">{{ word.word }}</h1>
+  {% if username == word.created_by %}
+    | <a href="{{ url_for('edit_definition', word=word.word) }}" class="inconspicuous-link">edit</a>
+    <a href="{{ url_for('delete_definition', word=word.word) }}" class="inconspicuous-link">delete</a>
+  {% endif %}
+  <p class="word-definition">{{ word.definition }}</p>
+  <p class="author"> - added by: {{ word.created_by }}</p>
 
-    {% if username == word.created_by %}
-      <a href="{{ url_for('edit_definition', word=word.word) }}">edit</a>
-      <a href="{{ url_for('delete_definition', word=word.word) }}">delete</a>
-    {% endif %}
 {% endblock %}

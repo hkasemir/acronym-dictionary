@@ -9,7 +9,7 @@
   <nav class="nav-main">
     <a href="/" class="nav-home">home</a>
     <a href="/categories">add a new category</a>
-    <a href="/definitions">add a new word</a>
+    <a href="/definitions">add an acronym</a>
   {% if username %}
   <div class="nav-account">
     <a href="/logout">logout {{ username }}</a>
@@ -23,7 +23,8 @@
   </nav>
 
   <section class="main-container">
-    <aside class="category-list-container">
+    <aside>
+      <h3 class="aside-title">categories</h3>
       <ul>
         {% for category in categories %}
           <li>

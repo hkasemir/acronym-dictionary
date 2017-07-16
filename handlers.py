@@ -2,7 +2,7 @@ from flask import render_template, flash, jsonify, session as login_session
 from models import Base, User, Definition, Category
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from application import getUsername
+from application import get_username
 
 engine = create_engine('sqlite:///dictionary.db')
 
@@ -13,7 +13,7 @@ DBSession = sessionmaker(bind=engine)
 # user ####################
 
 
-def getAvatar():
+def get_avatar():
     if 'avatar_url' in login_session:
         return login_session['avatar_url']
     return None
@@ -39,10 +39,10 @@ def show_main():
     categories = get_categories()
     latest_words = get_latest_words()
     return render_template('index.html',
-                           username=getUsername(),
+                           username=get_username(),
                            categories=categories,
                            latest_words=latest_words,
-                           avatar_url=getAvatar()
+                           avatar_url=get_avatar()
                            )
 
 
@@ -93,9 +93,9 @@ def show_add_category():
     session = DBSession()
     categories = get_categories()
     return render_template('category_create.html',
-                           username=getUsername(),
+                           username=get_username(),
                            categories=categories,
-                           avatar_url=getAvatar()
+                           avatar_url=get_avatar()
                            )
 
 
@@ -105,21 +105,22 @@ def show_category(categoryname):
     words = session.query(Definition).filter(
             Definition.category_name == categoryname).all()
     return render_template('category.html',
-                           username=getUsername(),
+                           username=get_username(),
                            category=categoryname,
                            categories=categories,
                            words=words,
-                           avatar_url=getAvatar()
+                           category_has_words=category_has_words(categoryname),
+                           avatar_url=get_avatar()
                            )
 
 
 def show_delete_category(categoryname):
     categories = get_categories()
     return render_template('category_delete.html',
-                           username=getUsername(),
+                           username=get_username(),
                            category=categoryname,
                            categories=categories,
-                           avatar_url=getAvatar()
+                           avatar_url=get_avatar()
                            )
 
 
@@ -147,15 +148,15 @@ def user_created_word(word):
     session = DBSession()
     definition = session.query(Definition).filter(
             Definition.word == word).one()
-    return definition.created_by == getUsername()
+    return definition.created_by == get_username()
 
 
 def show_add_word():
     categories = get_categories()
     return render_template('definition_create.html',
-                           username=getUsername(),
+                           username=get_username(),
                            categories=categories,
-                           avatar_url=getAvatar()
+                           avatar_url=get_avatar()
                            )
 
 
@@ -165,7 +166,7 @@ def add_word(form):
         word=form['word'],
         definition=form['definition'],
         category_name=form['category'],
-        created_by=getUsername()
+        created_by=get_username()
         ))
     session.commit()
     flash('%s added!' % form['word'], 'success')
@@ -180,10 +181,10 @@ def show_word(word):
     definition = session.query(Definition).filter(
             Definition.word == word).one()
     return render_template('definition.html',
-                           username=getUsername(),
+                           username=get_username(),
                            categories=categories,
                            word=definition,
-                           avatar_url=getAvatar()
+                           avatar_url=get_avatar()
                            )
 
 
@@ -193,10 +194,10 @@ def show_edit_word(word):
     definition = session.query(Definition).filter(
             Definition.word == word).one()
     return render_template('definition_edit.html',
-                           username=getUsername(),
+                           username=get_username(),
                            categories=categories,
                            word=definition,
-                           avatar_url=getAvatar()
+                           avatar_url=get_avatar()
                            )
 
 
@@ -221,10 +222,10 @@ def show_delete_word(word):
     definition = session.query(Definition).filter(
             Definition.word == word).one()
     return render_template('definition_delete.html',
-                           username=getUsername(),
+                           username=get_username(),
                            categories=categories,
                            word=definition,
-                           avatar_url=getAvatar()
+                           avatar_url=get_avatar()
                            )
 
 

@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Home | {% endblock %}
 {% block content %}
+  <h2>recently added -</h2>
   <ul>
   {% for word in latest_words %}
-    <li>
-      <a href="{{ url_for('show_definition', word=word.word) }}">{{ word.word }}</a>
-      ({{ word.category_name }}) - {{ word.definition }}
+    <li class="word-list-item">
+      <a href="{{ url_for('show_definition', word=word.word) }}" class="word-link">{{ word.word }}</a>
+      <span class="word-category">({{ word.category_name }})</span> - {{ word.definition }}
     </li>
   {% endfor %}
   </ul>
