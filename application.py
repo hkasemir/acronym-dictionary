@@ -1,3 +1,4 @@
+from functools import wraps
 import handlers
 from flask import Flask, flash, url_for, render_template
 from flask import make_response, redirect, request
@@ -35,6 +36,16 @@ def verify_session():
         return False
 
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not verify_session():
+            login_session['return_url'] = request.url
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @app.route('/')
 def main():
     return handlers.show_main()
@@ -45,7 +56,7 @@ def words_json():
     return handlers.get_words_json()
 
 
-@app.route('/definitions/<word>/json')
+@app.route('/definitions/<path:word>/json')
 def single_word_json(word):
     return handlers.get_single_word_json(word)
 
@@ -56,6 +67,7 @@ def categories_json():
 
 
 @app.route('/categories', methods=['POST', 'GET'])
+@login_required
 def add_category():
     if request.method == 'POST':
         handlers.add_category(request.form)
@@ -65,12 +77,13 @@ def add_category():
         return handlers.show_add_category()
 
 
-@app.route('/categories/<categoryname>')
+@app.route('/categories/<path:categoryname>')
 def show_category(categoryname):
     return handlers.show_category(categoryname)
 
 
-@app.route('/categories/<categoryname>/delete', methods=['POST', 'GET'])
+@app.route('/categories/<path:categoryname>/delete', methods=['POST', 'GET'])
+@login_required
 def delete_category(categoryname):
     if request.method == 'POST':
         if handlers.category_has_words(categoryname):
@@ -89,10 +102,8 @@ def delete_category(categoryname):
 
 
 @app.route('/definitions', methods=['POST', 'GET'])
+@login_required
 def add_definition():
-    if not verify_session():
-        login_session['return_url'] = url_for('add_definition')
-        return redirect('/login')
     if request.method == 'POST':
         definition = handlers.add_word(request.form)
         return redirect(url_for('show_definition', word=definition.word))
@@ -101,16 +112,14 @@ def add_definition():
         return handlers.show_add_word()
 
 
-@app.route('/definitions/<word>')
+@app.route('/definitions/<path:word>')
 def show_definition(word):
     return handlers.show_word(word)
 
 
-@app.route('/definitions/<word>/edit', methods=['POST', 'GET'])
+@app.route('/definitions/<path:word>/edit', methods=['POST', 'GET'])
+@login_required
 def edit_definition(word):
-    if not verify_session():
-        login_session['return_url'] = url_for('edit_definition', word=word)
-        return redirect('/login')
     if request.method == 'POST':
         if handlers.user_created_word(word):
             updated = handlers.edit_word(word, request.form)
@@ -125,11 +134,9 @@ def edit_definition(word):
         return redirect(url_for('show_definition', word=word))
 
 
-@app.route('/definitions/<word>/delete', methods=['POST', 'GET'])
+@app.route('/definitions/<path:word>/delete', methods=['POST', 'GET'])
+@login_required
 def delete_definition(word):
-    if not verify_session():
-        login_session['return_url'] = url_for('delete_definition', word=word)
-        return redirect('/login')
     if request.method == 'POST':
         if handlers.user_created_word(word):
             categoryname = handlers.delete_word(word)
@@ -162,7 +169,6 @@ def login():
 @app.route('/logout')
 def logout():
     login_session.pop('username', None)
-    login_session.pop('return_url', None)
     login_session.pop('avatar_url', None)
     login_session.pop('state', None)
     return redirect(url_for('main'))
@@ -202,13 +208,10 @@ def auth():
     # STEP 4 - set login_session creds and redirect
     login_session['username'] = user.username
     login_session['avatar_url'] = data['avatar_url']
-    redirect_url = '/'
+    return_url = '/'
     if 'return_url' in login_session:
-        # they were redirected to login while trying to access a specific page
-        # so send them back there
-        redirect_url = login_session['return_url']
-    response = make_response(redirect(redirect_url))
-    return response
+        return_url = login_session['return_url']
+    return redirect(return_url)
 
 
 if __name__ == '__main__':

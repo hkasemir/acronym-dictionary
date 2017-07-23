@@ -31,7 +31,7 @@ class Category(Base):
 class Definition(Base):
     __tablename__ = 'definition'
     id = Column(Integer, primary_key=True)
-    word = Column(String(80), nullable=False)
+    word = Column(String(80), nullable=False, unique=True)
     definition = Column(String(250), nullable=False)
     created_by = Column(String(32),
                         ForeignKey('user.username'),
